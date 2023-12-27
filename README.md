@@ -3,4 +3,4 @@ Objective: Consider Producer / Consumer seperation of responsibilities. Design a
 
 The interfaces in the stream package are short and descriptive. 
 IStreamManager is responcible for managing a stream connection. Managers have two unexported values backed with getters. The values are initially set with constructors. 
-The constructors for the stream managers control the rate that events come back to the consumer and the total amount of messages the consumer wants to receive. A further exantion on this might be to send unlimited amount of events if the rate is set to zero. 
+The constructors for the stream managers control the rate that events come back to the consumer and the total amount of messages the consumer wants to receive. A further expantion on this might be to send unlimited amount of events if the rate is set to zero. 
