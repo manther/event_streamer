@@ -1,11 +1,11 @@
-package stream
+package memory
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/manther/events/util"
+	"github.com/manther/events/stream"
 	"github.com/shirou/gopsutil/v3/mem"
 )
 
@@ -44,8 +44,8 @@ func (m MemManager) Rate() time.Duration {
 	return m.rate
 }
 
-func (m MemManager) Stream(fBuilder func(memStat *mem.VirtualMemoryStat) IEvent, fListener func() (*mem.VirtualMemoryStat, error)) (<-chan IEvent, chan<- struct{}) {
-	eventChan := make(chan IEvent)
+func (m MemManager) Stream(fBuilder func(memStat *mem.VirtualMemoryStat) stream.IEvent, fListener func() (*mem.VirtualMemoryStat, error)) (<-chan stream.IEvent, chan<- struct{}) {
+	eventChan := make(chan stream.IEvent)
 	quitChan := make(chan struct{})
 	go func() {
 		for {
@@ -75,9 +75,9 @@ func GetMemStats() (*mem.VirtualMemoryStat, error) {
 	return mem.VirtualMemory()
 }
 
-func BuildMemEvent(memStat *mem.VirtualMemoryStat) IEvent {
+func BuildMemEvent(memStat *mem.VirtualMemoryStat) stream.IEvent {
 	return memEvent{
-		eventType:         util.Memory.String(),
+		eventType:         stream.Memory.String(),
 		eventID:           uuid.NewString(),
 		VirtualMemoryStat: memStat,
 		timeStamp:         time.Now(),

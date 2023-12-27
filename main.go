@@ -5,7 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/manther/events/stream"
+	"github.com/manther/events/stream/memory"
+	"github.com/manther/events/stream/process"
 )
 
 func main() {
@@ -17,20 +18,18 @@ func main() {
 }
 
 func streamProcessEvents(wg *sync.WaitGroup) {
-	manager := stream.NewProcessManager(
+	manager := process.NewProcessManager(
 		time.Second/5,
 		20,
 	)
 
 	go func() {
 		defer wg.Done()
-		events, quitchan := manager.Stream(stream.BuildProcEvent, stream.GetRunningProcs)
 		i := 1
-		for event := range events {
+		for event := range manager.Stream(process.BuildProcEvent, process.GetRunningProcs) {
 			fmt.Println(event.ToString())
 			if i == manager.Amount() {
-				close(quitchan)
-				return
+				break
 			}
 			i++
 		}
@@ -38,24 +37,23 @@ func streamProcessEvents(wg *sync.WaitGroup) {
 }
 
 func streamMemStats(wg *sync.WaitGroup) {
-	manager := stream.NewMemoryManager(
+	manager := memory.NewMemoryManager(
 		time.Second/15,
 		50,
 	)
 
 	go func() {
 		defer wg.Done()
-		events, quitchan := manager.Stream(stream.BuildMemEvent, stream.GetMemStats)
+		events, quitchan := manager.Stream(memory.BuildMemEvent, memory.GetMemStats)
 		i := 1
 		for event := range events {
-			
+
 			fmt.Println(event.ToString())
 			if i == manager.Amount() {
 				close(quitchan)
-				return
+				break
 			}
 			i++
 		}
 	}()
 }
-

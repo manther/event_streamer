@@ -1,4 +1,4 @@
-package stream
+package process
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/manther/events/util"
+	"github.com/manther/events/stream"
 	"github.com/shirou/gopsutil/v3/process"
 )
 
@@ -26,7 +26,7 @@ func (e ProcEvent) TimeStamp() time.Time {
 // The work that in the end will be shown for streaming information.
 // in a real app this info would be used to some purpose. 
 func (e ProcEvent) ToString() string {
-	return fmt.Sprintf("ProcStats - Pid: %s. Event Type: %s. Event ID: %s. CPU: %%:%s", e.pid, e.eventType, e.eventID, e.procUtilization)
+	return fmt.Sprintf("ProcStats - TimeStamp: %v. Pid: %s. Event ID: %s. Event Type: %s. CPU: %%:%s", e.TimeStamp(), e.pid, e.eventID, e.eventType, e.procUtilization)
 }
 
 type ProcessManager struct {
@@ -49,31 +49,23 @@ func NewProcessManager(rate time.Duration, amount int) ProcessManager {
 	}
 }
 
-func (m ProcessManager) Stream(fBuilder func(proc *process.Process) IEvent, fListener func() []*process.Process) (<-chan IEvent, chan<- struct{}) {
-	eventChan := make(chan IEvent)
-	quitChan := make(chan struct{})
+func (m ProcessManager) Stream(fBuilder func(proc *process.Process) stream.IEvent, fListener func() []*process.Process) <-chan stream.IEvent {
+	eventChan := make(chan stream.IEvent)
 	go func() {
 		for {
 			for _, out := range fListener() {
 				pcEvent := fBuilder(out)
 				time.Sleep(m.Rate())
 				eventChan <- pcEvent
-
-				select {
-				case <-quitChan:
-					close(eventChan)
-					return
-				default:
-				}
 			}
 		}
 
 	}()
 
-	return eventChan, quitChan
+	return eventChan
 }
 
-func BuildProcEvent(proc *process.Process) IEvent {
+func BuildProcEvent(proc *process.Process) stream.IEvent {
 	// TODO use with context to allow a timeout.
 	cpuPerc, err := proc.CPUPercent()
 	// TODO this test is not evaluating correctly.
@@ -84,7 +76,7 @@ func BuildProcEvent(proc *process.Process) IEvent {
 	}
 
 	return ProcEvent{
-		eventType:       util.Process.String(),
+		eventType:       stream.Process.String(),
 		eventID:         uuid.NewString(),
 		pid:             fmt.Sprintf("%d", proc.Pid),
 		procUtilization: fmt.Sprintf("%f", cpuPerc),

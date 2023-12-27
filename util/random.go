@@ -24,25 +24,7 @@ func RandomString() string {
 	return sb.String()
 }
 
-type EventTypes int
-
-const (
-	Memory    EventTypes = iota + 1
-	Process                       
-	Network                                        
-)
-
-func (e EventTypes) String() string {
-	return []string{"Memory", "Process", "Network"}[e-1]
-}
-
-func (e EventTypes) EnumIndex() int {
-	return int(e)
-}
-
-var eventTypes = []string{Memory.String(), Process.String(), Network.String()}
-
-func RandomEventType() string {
-	return eventTypes[RandomInt(0, 2)]
-}
+// func RandomEventType() string {
+// 	return eventTypes[RandomInt(0, 2)]
+// }
 
